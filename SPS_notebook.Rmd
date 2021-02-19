@@ -1,0 +1,297 @@
+---
+title: "SPS data"
+output: html_notebook
+---
+
+SPS
+
+```{r libraries, include=FALSE}
+source("libraries.R")
+```
+Louisa Boren STEM K-8	West Seattle HS + Denny Int. MS
+Pathfinder K-8	West Seattle HS + Denny Int. MS
+Orca K-8	Mercer Int MS + Hawthorne Elementary + Kimball Elementary
+South Shore K8	Aki Kurose MS - Orca geozone
+John Stanford International School	Hamilton Int. MS
+TOPS K-8	Elementary attendance areas of: Montlake, McGilvra, Stevens, Lowell(but not past I5), Madrona, Gatzert, Leschi, Thurgood Marshall, John Muir and Hawthorn
+Thornton Creek Elementary	Eckstein MS + Olympic View Elementary
+Hazel Wolf K-8	Jane Addams MS + Eckstein MS + Olympic View Elementary
+Cedar Park	Jane Addams MS
+Licton Springs K-8	Jane Adams MS + Eckstein MS + Robert Eagle Staff MS
+Salmon Bay K-8	Hamilton Int. MS + Whitman MS + Robert Eaglestaff MS
+McDonald International School	Hamilton Int. MS
+Queen Anne Elementary	McClure Middle School
+
+```{r}
+attendance_areas <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/ES/sps_attendance_area_ES_2020_2021.shp")
+school.sites <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/sites/Sites_2020.shp")
+
+
+option.sites <- school.sites %>% 
+  filter(property_l=="Orca K-8" | property_l=="Boren STEM K-8" | property_l=="Pathfinder K-8" | property_l=="South Shore K-8" | 
+           property_l=="John Stanford Int'l" |  property_l=="TOPS K-8" |  property_l=="Leschi" |  property_l=="Thornton Creek" | property_l=="Hazel Wolf K-8" | 
+         property_l=="Cedar Park" | property_l=="Licton Springs K-8" | property_l=="Salmon Bay K-8" | property_l=="McDonald Int'l" | property_l=="Queen Anne")
+
+#Louisa Boren STEM K-8	Madison MS + Denny Int. MS
+
+trans.boren <- attendance_areas %>% 
+  filter(MS_ZONE=="Denny Int'l" | MS_ZONE=="Madison") %>% 
+  st_combine() %>% 
+  st_union(by_feature = TRUE)
+
+  
+#Pathfinder K-8	Madison MS + Denny Int. MS
+trans.pathfinder <- attendance_areas %>% 
+  filter(MS_ZONE=="Denny Int'l" | MS_ZONE=="Madison") %>% 
+  st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+
+#OrcaK-8 attendance area Mercer Int MS + Hawthorne Elementary + Kimball Elementary
+trans.orca <- attendance_areas %>% 
+  filter(MS_ZONE=="Mercer Int'l" | ES_ZONE=="Kimball" | ES_ZONE=="Hawthorne") %>% 
+     st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+
+# South Shore K8	Aki Kurose MS - Hawthorne elementary
+trans.southshore <- attendance_areas %>% 
+  filter(MS_ZONE=="Aki Kurose" | ES_ZONE=="Hawthorne") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# John Stanford International School	Hamilton Int. MS
+trans.jsis <- attendance_areas %>% 
+  filter(MS_ZONE=="Hamilton Int'l") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# TOPS K-8	Elementary attendance areas of: Montlake, McGilvra, Stevens, Lowell(but not past I5), Madrona, Gatzert, Leschi, Thurgood Marshall, John Muir and Hawthorn
+trans.tops <- attendance_areas %>% 
+  filter(ES_ZONE=="Montlake" | ES_ZONE=="McGilvra" | ES_ZONE=="Stevens" |
+           ES_ZONE=="Lowell" | ES_ZONE=="Madrona" | ES_ZONE=="Gatzert" | ES_ZONE=="Leschi" |
+ES_ZONE== "Thurgood Marshall" | ES_ZONE =="John Muir"| ES_ZONE=="Hawthorne") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Thornton Creek Elementary	Eckstein MS + Olympic View Elementary
+trans.thorton <- attendance_areas %>% 
+  filter(MS_ZONE=="Eckstein" | ES_ZONE=="Olympic View") %>% 
+   st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Hazel Wolf K-8	Jane Addams MS + Eckstein MS + Olympic View Elementary
+trans.hazel <- attendance_areas %>% 
+  filter(MS_ZONE=="Jane Addams" | MS_ZONE=="Eckstein" | ES_ZONE=="Olympic View") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Cedar Park	Jane Addams MS
+trans.cedarpark <- attendance_areas %>% 
+  filter(MS_ZONE=="Jane Addams") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Licton Springs K-8	Jane Adams MS + Eckstein MS + Robert Eagle Staff MS
+trans.licton <- attendance_areas %>% 
+  filter(MS_ZONE=="Jane Addams" | MS_ZONE=="Eckstein" | MS_ZONE=="Eagle Staff") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Salmon Bay K-8	Hamilton Int. MS + Whitman MS + Robert Eaglestaff MS
+trans.salmonbay <- attendance_areas %>% 
+  filter(MS_ZONE=="Hamilton Int'l"| MS_ZONE=="Whitman" | MS_ZONE=="Eagle Staff") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# McDonald International School	Hamilton Int. MS
+trans.mcdonald <- attendance_areas %>% 
+  filter(MS_ZONE=="Hamilton Int'l") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+# Queen Anne Elementary	McClure Middle School
+trans.queenane <- attendance_areas %>% 
+  filter(MS_ZONE=="McClure") %>% 
+    st_combine() %>% 
+   st_union(by_feature = TRUE)
+
+seattle.crs <- st_crs(trans.boren)
+
+
+origin.language <- st_read("ACS%3A_Nativity_By_Language_Spoken_At_Home_By_Ability_To_Speak_English_For_The_Population_5_Years_And_Over___acs_b16005_nativitybylanguage.shp")
+
+
+school.enrollment <- st_read("ACS%3A_School_Enrollment_By_Level_Of_School_For_The_Population_3_Years_And_Over___acs_b14001_schoolenrollment.shp")
+#Attribute Label: E14001006
+#Attribute Definition: E1216 - Enrolled in school:Enrolled in grade 5 to grade 8
+#Attribute Label: E14001005
+#Attribute Definition: E1216 - Enrolled in school:Enrolled in grade 1 to grade 4
+#Attribute Label: E14001004
+#Attribute Definition: E1216 - Enrolled in school:Enrolled in kindergarten
+
+KCdemographics <- st_read("Consolidated_Demographics_Index_for_King_County_Census_Tracts___demographic_index_area.shp")
+
+kc.demographics.nad <- st_transform(KCdemographics, seattle.crs)
+school.enrollment.nad <- st_transform(school.enrollment, seattle.crs)
+origin.language.nad <- st_transform(origin.language, seattle.crs)
+
+
+get_demoinfo <- function(thisnoschool, school.transareas, school.names, city.region, kc.demographics.nad, school.enrollment.nad, origin.language.nad){
+
+  print(thisnoschool)
+  thistransportationarea <- school.transareas[[thisnoschool]]
+  thisschool <- school.names[thisnoschool]
+  thisregion <- city.region[thisnoschool]
+  
+  print(paste(thistransportationarea, thisschool, thisregion))
+    
+  this.demo <- st_intersection(kc.demographics.nad,thistransportationarea)
+  
+ this.enroll <- st_intersection(school.enrollment.nad,thistransportationarea)
+ 
+ this.lang <- st_intersection(origin.language.nad,thistransportationarea)
+ 
+ this.enroll.data <- this.enroll %>% 
+  st_drop_geometry() %>% 
+  as_tibble() %>% 
+  mutate(enrolled_K_8 = E14001006 + E14001005 + E14001004) %>% 
+  mutate(school = thisschool) %>% 
+  group_by(school) %>% 
+  summarise(tot_enrolled_K_8 = sum(enrolled_K_8)) %>% 
+   mutate(region=thisregion)
+   
+
+ this.lang.data <- this.lang %>% 
+  st_drop_geometry() %>% 
+  as_tibble() %>% 
+   mutate(language = E16005024 + E16005019) %>% 
+    mutate(school = thisschool) %>% 
+  group_by(school) %>%
+   summarise(tot_lang = sum(language))
+   
+ 
+  area.trans <- st_area(thistransportationarea) %>% 
+    as.numeric %>% 
+    multiply_by(3.5870064279155E-8) 
+
+this.demo.data <- this.demo %>% 
+  st_drop_geometry() %>% 
+  as_tibble() %>% 
+  mutate(school = thisschool) %>% 
+  group_by(school) %>% 
+  summarise(Tot_population = sum(Population), Per_ESL = (sum(NumberofES)/sum(Population))*100, mean_Median_house_income = mean(MedianHous), Per_POC = (sum(NumberofPO)/sum(Population))*100) %>% mutate(transportation_area_sqmiles = area.trans) %>% 
+  left_join(this.enroll.data, by="school") %>% 
+  left_join(this.lang.data, by="school") %>% 
+  mutate(Per_enrolled_K_8 = (tot_enrolled_K_8/Tot_population)*100) %>% 
+  mutate(Per_other_language = (tot_lang/Tot_population)*100)
+
+
+return(this.demo.data)
+  
+}
+
+school.transareas <- list(trans.boren, trans.cedarpark, trans.hazel, trans.jsis, trans.licton, trans.mcdonald, trans.orca, trans.pathfinder, trans.queenane, trans.salmonbay, trans.southshore, trans.thorton, trans.tops)
+
+school.names <- c("Louisa Boren STEM K-8","Cedar Park", "Hazel Wolf K-8", "John Stanford International School", "Licton Springs K-8", "McDonald International School", 
+                  "Orca K-8", "Pathfinder K-8", "Queen Anne Elementary", "Salmon Bay K-8", "South Shore K8", "Thornton Creek Elementary", "TOPS K-8")
+
+city.region <- c("West Seattle","North Seattle","North Seattle","North Seattle","North Seattle","North Seattle",
+                 "Central Seattle", "West Seattle","Central Seattle","North Seattle","South Seattle","North Seattle","Central Seattle")
+
+no.schools <- 1:length(school.names)
+
+school.trans.demo <- lapply(no.schools, get_demoinfo, school.transareas, school.names, city.region, kc.demographics.nad, school.enrollment.nad,origin.language.nad)
+
+school.trans.demo %>% 
+  bind_rows %>% 
+  arrange(region,transportation_area_sqmiles,school,Per_POC) %>% 
+  write_csv("school_census.csv")
+
+
+option.demo <- read_csv("option_school_demographics.csv") %>% 
+  dplyr::rename(school=School)
+  
+school.sum.data <- school.trans.demo %>% 
+  bind_rows %>% 
+  arrange(region,transportation_area_sqmiles,school,Per_POC) %>% 
+  left_join(option.demo, by="school")
+
+write_csv(school.sum.data, "school_option_data.csv")
+
+trans.income <- ggplot(data=school.sum.data) +
+  geom_point(aes(transportation_area_sqmiles,mean_Median_house_income, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("Mean median household income") + 
+  theme_economist() 
+
+  ggsave("transportation_income.png",trans.income,device="png",dpi=300)
+    
+trans.esl <- ggplot(data=school.sum.data) +
+  geom_point(aes(transportation_area_sqmiles,Per_ESL, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("Percent population speak English as a Second language") + 
+  theme_economist() 
+
+  ggsave("transportation_esl.png",trans.esl,device="png",dpi=300)
+  
+      
+trans.pop <- ggplot(data=school.sum.data) +
+  geom_point(aes(transportation_area_sqmiles, `FRL students elegible for busing`, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("% Free and Reduced Lunch School eligible busing") + 
+  theme_economist() 
+
+  ggsave("transportation_pop.png",trans.pop,device="png",dpi=300)
+
+
+trans.ell <- ggplot(data=school.sum.data) +
+  geom_point(aes(`%student pop. eleigle for busing`, `%FRL`, color = region, fill = region)) +
+    xlab("% Student population elegible for busing") +
+    ylab("% School population elegible for Free and Reduced Lunch") + 
+  theme_economist() 
+
+  ggsave("transportation_ell.png",trans.ell,device="png",dpi=300)
+  
+  
+trans.bipoc <- ggplot(data=school.sum.data) +
+  geom_point(aes(`%student pop. eleigle for busing`, `%BIPOC`, color = region, fill = region)) +
+    xlab("% Student population elegible for busing") +
+    ylab("% BIPOC Student population") + 
+  theme_economist() 
+
+  ggsave("transportation_bipoc.png",trans.bipoc,device="png",dpi=300)
+
+
+  trans.area.bipoc <- ggplot(data=school.sum.data) +
+  geom_point(aes(transportation_area_sqmiles, `%BIPOC`, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("% BIPOC Student population") + 
+  theme_economist() 
+
+  ggsave("transportation_area_bipoc.png",trans.bipoc,device="png",dpi=300)
+
+
+```
+
+
+```{r}
+
+#Attribute:
+#Attribute Label: E1601126, Attribute Definition: E1317 -Percent, SPEAK A LANGUAGE OTHER THAN ENGLISH - Spanish - 5 to 17 years old
+#Attribute Label: M1601126, Attribute Definition: M131717 -Percent, SPEAK A LANGUAGE OTHER THAN ENGLISH - Spanish - 5 to 17 years old. Attribute Definition Source: US Census Margin of Error
+#Attribute Label: E1601119, Attribute Definition: E1317 -Total, SPEAK A LANGUAGE OTHER THAN ENGLISH - Spanish
+#Attribute Label: E1601113, Attribute Definition: E1317 -Total, Speak a language other than English
+#Attribute Label: E1601101, Attribute Definition: M131717 -Total, Population 5 years and over
+
+attendance_areas <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/ES/sps_attendance_area_ES_2020_2021.shp")
+school.sites <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/sites/Sites_2020.shp")
+
+language_home <- st_read("ACS%3A_Language_Spoken_At_Home___acs_s1601_languagespokeathome.shp")
+
+
+ggplot() +
+   geom_sf(aes(fill=(E1601119/E1601101)*100),data = language_home)
+
+```
+
