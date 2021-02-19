@@ -15,7 +15,7 @@
 
 .packages = c("tidyverse","devtools","raster","readxl",
               "sp","sf",
-              "readr","rgdal","XML", "ggthemes",
+              "readr","rgdal","XML", "ggthemes","ggrepel",
               "stringr","data.table","ggmap","Redmonder","magrittr") 
 
 # Install CRAN packages (if not already installed)

@@ -23,8 +23,8 @@ McDonald International School	Hamilton Int. MS
 Queen Anne Elementary	McClure Middle School
 
 ```{r}
-attendance_areas <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/ES/sps_attendance_area_ES_2020_2021.shp")
-school.sites <- st_read("~/SPS/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/sites/Sites_2020.shp")
+attendance_areas <- st_read("~/SPS_transportation/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/ES/sps_attendance_area_ES_2020_2021.shp")
+school.sites <- st_read("~/SPS_transportation/SPS_AttendanceAreasAndSchools_Shapefiles_2020_2021/sites/Sites_2020.shp")
 
 
 option.sites <- school.sites %>% 
@@ -215,7 +215,9 @@ option.demo <- read_csv("option_school_demographics.csv") %>%
 school.sum.data <- school.trans.demo %>% 
   bind_rows %>% 
   arrange(region,transportation_area_sqmiles,school,Per_POC) %>% 
-  left_join(option.demo, by="school")
+  left_join(option.demo, by="school") %>% 
+  mutate(school=if_else(school=="John Stanford International School","John Stanford Int. School",
+                       if_else(school=="McDonald International School","McDonald Int. School", school)))
 
 write_csv(school.sum.data, "school_option_data.csv")
 
@@ -223,54 +225,61 @@ trans.income <- ggplot(data=school.sum.data) +
   geom_point(aes(transportation_area_sqmiles,mean_Median_house_income, color = region, fill = region)) +
     xlab("Transportation area Sq Miles") +
     ylab("Mean median household income") + 
+  geom_text_repel(aes(transportation_area_sqmiles,mean_Median_house_income,label=school),nudge_x = 1)+
   theme_economist() 
 
-  ggsave("transportation_income.png",trans.income,device="png",dpi=300)
+  ggsave("transportation_income.png",trans.income,device="png",dpi=300, height = 6, width = 10)
     
 trans.esl <- ggplot(data=school.sum.data) +
   geom_point(aes(transportation_area_sqmiles,Per_ESL, color = region, fill = region)) +
     xlab("Transportation area Sq Miles") +
     ylab("Percent population speak English as a Second language") + 
+    geom_text_repel(aes(transportation_area_sqmiles,Per_ESL,label=school),nudge_x = 1)+
   theme_economist() 
 
-  ggsave("transportation_esl.png",trans.esl,device="png",dpi=300)
+  ggsave("transportation_esl.png",trans.esl,device="png",dpi=300, height = 6, width = 10)
   
       
 trans.pop <- ggplot(data=school.sum.data) +
   geom_point(aes(transportation_area_sqmiles, `FRL students elegible for busing`, color = region, fill = region)) +
     xlab("Transportation area Sq Miles") +
-    ylab("% Free and Reduced Lunch School eligible busing") + 
+    ylab("% FRL students elegible for transportation") + 
+     geom_text_repel(aes(transportation_area_sqmiles, `FRL students elegible for busing`, label = school),nudge_x = 1)+
   theme_economist() 
 
-  ggsave("transportation_pop.png",trans.pop,device="png",dpi=300)
+  ggsave("transportation_pop.png",trans.pop,device="png",dpi=300, height = 6, width = 10)
 
+  trans.pop.frl <- ggplot(data=school.sum.data) +
+  geom_point(aes(transportation_area_sqmiles, `%FRL`, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("% FRL students in school population") + 
+     geom_text_repel(aes(transportation_area_sqmiles, `%FRL`, label = school),nudge_x = 1)+
+  theme_economist() 
+
+  ggsave("transportation_pop_frl.png",trans.pop.frl,device="png",dpi=300, height = 6, width = 10)
 
 trans.ell <- ggplot(data=school.sum.data) +
-  geom_point(aes(`%student pop. eleigle for busing`, `%FRL`, color = region, fill = region)) +
-    xlab("% Student population elegible for busing") +
-    ylab("% School population elegible for Free and Reduced Lunch") + 
+  geom_point(aes(`transportation_area_sqmiles`, `%ELL`, color = region, fill = region)) +
+    xlab("Transportation area Sq Miles") +
+    ylab("% ELL") + 
+   geom_text_repel(aes(transportation_area_sqmiles, `%ELL`, label = school),nudge_x = 1)+
+
   theme_economist() 
 
-  ggsave("transportation_ell.png",trans.ell,device="png",dpi=300)
+  ggsave("transportation_ell.png",trans.ell,device="png",dpi=300, height = 6, width = 10)
   
   
 trans.bipoc <- ggplot(data=school.sum.data) +
-  geom_point(aes(`%student pop. eleigle for busing`, `%BIPOC`, color = region, fill = region)) +
-    xlab("% Student population elegible for busing") +
+  geom_point(aes(`transportation_area_sqmiles`, `%BIPOC`, color = region, fill = region)) +
+    xlab("Transportation area Sq Mile") +
     ylab("% BIPOC Student population") + 
+     geom_text_repel(aes(transportation_area_sqmiles,  `%BIPOC`, label = school),nudge_x = 1)+
   theme_economist() 
 
-  ggsave("transportation_bipoc.png",trans.bipoc,device="png",dpi=300)
+  ggsave("transportation_bipoc.png",trans.bipoc,device="png",dpi=300, height = 6, width = 10)
 
 
-  trans.area.bipoc <- ggplot(data=school.sum.data) +
-  geom_point(aes(transportation_area_sqmiles, `%BIPOC`, color = region, fill = region)) +
-    xlab("Transportation area Sq Miles") +
-    ylab("% BIPOC Student population") + 
-  theme_economist() 
-
-  ggsave("transportation_area_bipoc.png",trans.bipoc,device="png",dpi=300)
-
+ 
 
 ```
 
