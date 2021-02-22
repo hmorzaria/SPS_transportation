@@ -217,15 +217,19 @@ school.sum.data <- school.trans.demo %>%
   arrange(region,transportation_area_sqmiles,school,Per_POC) %>% 
   left_join(option.demo, by="school") %>% 
   mutate(school=if_else(school=="John Stanford International School","John Stanford Int. School",
-                       if_else(school=="McDonald International School","McDonald Int. School", school)))
+                       if_else(school=="McDonald International School","McDonald Int. School", school))) %>% 
+  mutate(`FRL students elegible for busing` = as.numeric(`FRL students elegible for busing`)) %>% 
+ mutate(`%FRL students elegible for busing` = (`FRL students elegible for busing`/FRL)*100)
 
 write_csv(school.sum.data, "school_option_data.csv")
 
-trans.income <- ggplot(data=school.sum.data) +
-  geom_point(aes(transportation_area_sqmiles,mean_Median_house_income, color = region, fill = region)) +
+trans.income <- school.sum.data %>% 
+  mutate(household_income_thousands = mean_Median_house_income/ 1000) %>% 
+ggplot() +
+  geom_point(aes(transportation_area_sqmiles,household_income_thousands, color = region, fill = region)) +
     xlab("Transportation area Sq Miles") +
-    ylab("Mean median household income") + 
-  geom_text_repel(aes(transportation_area_sqmiles,mean_Median_house_income,label=school),nudge_x = 1)+
+    ylab("Mean median household income (thousands)") + 
+  geom_text_repel(aes(transportation_area_sqmiles,household_income_thousands,label=school),nudge_x = 1)+
   theme_economist() 
 
   ggsave("transportation_income.png",trans.income,device="png",dpi=300, height = 6, width = 10)
@@ -240,11 +244,13 @@ trans.esl <- ggplot(data=school.sum.data) +
   ggsave("transportation_esl.png",trans.esl,device="png",dpi=300, height = 6, width = 10)
   
       
-trans.pop <- ggplot(data=school.sum.data) +
-  geom_point(aes(transportation_area_sqmiles, `FRL students elegible for busing`, color = region, fill = region)) +
+trans.pop <- school.sum.data %>% 
+  filter(school!="McDonald Int. School") %>% 
+  ggplot() +
+  geom_point(aes(transportation_area_sqmiles, `%FRL students elegible for busing`, color = region, fill = region)) +
     xlab("Transportation area Sq Miles") +
-    ylab("% FRL students elegible for transportation") + 
-     geom_text_repel(aes(transportation_area_sqmiles, `FRL students elegible for busing`, label = school),nudge_x = 1)+
+    ylab("% of FRL students elegible for transportation") + 
+     geom_text_repel(aes(transportation_area_sqmiles, `%FRL students elegible for busing`, label = school),nudge_x = 1)+
   theme_economist() 
 
   ggsave("transportation_pop.png",trans.pop,device="png",dpi=300, height = 6, width = 10)
@@ -277,6 +283,17 @@ trans.bipoc <- ggplot(data=school.sum.data) +
   theme_economist() 
 
   ggsave("transportation_bipoc.png",trans.bipoc,device="png",dpi=300, height = 6, width = 10)
+  
+  el.bipoc <- ggplot(data=school.sum.data) +
+  geom_point(aes(`%ELL`, `%BIPOC`, color = region, fill = region)) +
+    xlab("% EL Student population") +
+    ylab("% BIPOC Student population") + 
+     geom_text_repel(aes(`%ELL`,  `%BIPOC`, label = school),nudge_x = 1)+
+  theme_economist() 
+#    geom_vline(xintercept = 15, color = "darkblue")+
+ #   geom_hline(yintercept = 57, color = "darkblue")
+
+  ggsave("el_bipoc.png",el.bipoc,device="png",dpi=300, height = 6, width = 10)
 
 
  
